@@ -279,6 +279,187 @@ function gmailFromTerm(rule) {
 }
 
 /***************************************************************
+ * GMAIL AI MANAGER - INITIAL SETUP
+ *
+ * Safe, idempotent installation bootstrap.
+ *
+ * Creates required spreadsheet tabs and canonical Gmail labels.
+ *
+ * It DOES NOT:
+ *   - delete, archive, or modify email
+ *   - create Gmail filters
+ *   - install triggers
+ *   - overwrite existing sheet data
+ *   - create or store secrets
+ ***************************************************************/
+
+function setupGmailAIManager() {
+
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheetDefinitions = [
+    {
+      name: 'DELETE',
+      headers: [
+        'Sender',
+        'Enabled',
+        'Added',
+        'Existing Messages',
+        'Status'
+      ]
+    },
+    {
+      name: 'PROTECTED',
+      headers: [
+        'Sender / Domain',
+        'Enabled',
+        'Notes'
+      ]
+    },
+    {
+      name: 'AUTO',
+      headers: [
+        'Sender',
+        'Label',
+        'Archive'
+      ]
+    },
+    {
+      name: 'ISSUES',
+      headers: [
+        'Timestamp',
+        'Severity',
+        'Type',
+        'Rule',
+        'Details'
+      ]
+    }
+  ];
+
+
+  /*************************************************************
+   * PHASE 1 - VALIDATE EXISTING SHEETS
+   *
+   * Make no changes during this phase.
+   *************************************************************/
+
+  for (const definition of sheetDefinitions) {
+
+    const sheet =
+      ss.getSheetByName(definition.name);
+
+    /*
+     * Missing and completely empty sheets are valid.
+     * They will be initialized in Phase 2.
+     */
+
+    if (!sheet || sheet.getLastRow() === 0) {
+      continue;
+    }
+
+    const existingHeaders =
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          definition.headers.length
+        )
+        .getValues()[0]
+        .map(value => String(value).trim());
+
+    const headersMatch =
+      definition.headers.every(
+        (expected, index) =>
+          existingHeaders[index] === expected
+      );
+
+    if (!headersMatch) {
+
+      throw new Error(
+        `${definition.name} sheet has unexpected headers. ` +
+        `Expected: ${definition.headers.join(' | ')}. ` +
+        `Found: ${existingHeaders.join(' | ')}.`
+      );
+
+    }
+
+  }
+
+
+  /*************************************************************
+   * PHASE 2 - CREATE / INITIALIZE SHEETS
+   *
+   * Phase 1 succeeded, so required spreadsheet changes can now
+   * be made safely.
+   *************************************************************/
+
+  const results = [];
+
+  for (const definition of sheetDefinitions) {
+
+    let sheet =
+      ss.getSheetByName(definition.name);
+
+    let created = false;
+    let headersInitialized = false;
+
+    if (!sheet) {
+
+      sheet =
+        ss.insertSheet(definition.name);
+
+      created = true;
+
+    }
+
+    if (sheet.getLastRow() === 0) {
+
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          definition.headers.length
+        )
+        .setValues([
+          definition.headers
+        ]);
+
+      sheet.setFrozenRows(1);
+
+      headersInitialized = true;
+
+    }
+
+    results.push({
+      sheet: definition.name,
+      created: created,
+      headersInitialized: headersInitialized
+    });
+
+  }
+
+
+  /*************************************************************
+   * PHASE 3 - CREATE CANONICAL GMAIL LABELS
+   *************************************************************/
+
+  const labelResult =
+    setupCanonicalLabels();
+
+
+  return {
+    success: true,
+    accountType: GMAIL_AI_ACCOUNT_TYPE,
+    sheets: results,
+    labels: labelResult
+  };
+
+}
+
+/***************************************************************
  * MASTER SYNC
  *
  * Normal day-to-day entry point.
