@@ -107,23 +107,6 @@ function doPost(e) {
     });
 
 
-    /***********************************************************
-     * 4. EXECUTE THROUGH RULE API
-     ***********************************************************/
-
-    const result =
-      applyRuleChanges(
-        request.changes || {}
-      );
-
-
-    /***********************************************************
-     * 5. RETURN RESULT
-     ***********************************************************/
-
-    return jsonResponse(result);
-
-
   } catch (error) {
 
     console.error(error);
