@@ -452,7 +452,7 @@ function setupGmailAIManager() {
 
   return {
     success: true,
-    accountType: GMAIL_AI_ACCOUNT_TYPE,
+    accountType: getGmailAIAccountType(),
     sheets: results,
     labels: labelResult
   };

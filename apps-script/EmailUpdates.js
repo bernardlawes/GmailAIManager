@@ -4,7 +4,7 @@
  * Remote control for hourly Inbox snapshots.
  *
  * Authorized sender:
- *   As configured in GMAIL_AI_CONFIG.emailUpdates.authorizedSender
+ *   As configured by the installation's authorized sender setting
  *
  * Recognized exact subjects:
  *   Enable Email Updates
@@ -14,20 +14,41 @@
  * Provides remote command processing, ACTIVE/PAUSED state management,
  * hourly unread Inbox snapshots, confirmations, and polling control.
  *************************************************************************/
-const EMAIL_UPDATES_AUTHORIZED_SENDER =
-  GMAIL_AI_CONFIG.emailUpdates.authorizedSender;
+function getEmailUpdatesConfig() {
 
-const EMAIL_UPDATES_AUTHORIZED_RECIPIENT =
-  GMAIL_AI_CONFIG.emailUpdates.recipient;
+  return getGmailAIConfig().emailUpdates;
 
-const EMAIL_UPDATES_COMMAND_ENABLE =
-  GMAIL_AI_CONFIG.emailUpdates.commands.enable;
+}
 
-const EMAIL_UPDATES_COMMAND_PAUSE =
-  GMAIL_AI_CONFIG.emailUpdates.commands.pause;
+function getEmailUpdatesAuthorizedSender() {
 
-const EMAIL_UPDATES_COMMAND_DISABLE =
-  GMAIL_AI_CONFIG.emailUpdates.commands.disable;
+  return getEmailUpdatesConfig().authorizedSender;
+
+}
+
+function getEmailUpdatesRecipient() {
+
+  return getEmailUpdatesConfig().recipient;
+
+}
+
+function getEmailUpdatesCommandEnable() {
+
+  return getEmailUpdatesConfig().commands.enable;
+
+}
+
+function getEmailUpdatesCommandPause() {
+
+  return getEmailUpdatesConfig().commands.pause;
+
+}
+
+function getEmailUpdatesCommandDisable() {
+
+  return getEmailUpdatesConfig().commands.disable;
+
+}
 /*************************************************************************
  * LOCAL CALENDAR DAY CHECK
  *
@@ -68,7 +89,7 @@ function getTodayEmailUpdateCommands() {
   const query =
     'in:inbox ' +
     'from:' +
-    EMAIL_UPDATES_AUTHORIZED_SENDER +
+    getEmailUpdatesAuthorizedSender() +
     ' newer_than:1d';
   const messageIds =
     searchGmailIds(query);
@@ -120,7 +141,7 @@ function getTodayEmailUpdateCommands() {
       extractEmailUpdateAddress(from);
     if (
       senderAddress.toLowerCase() !==
-      EMAIL_UPDATES_AUTHORIZED_SENDER.toLowerCase()
+      getEmailUpdatesAuthorizedSender().toLowerCase()
     ) {
       continue;
     }
@@ -183,19 +204,19 @@ function emailUpdateCommandFromSubject(
 ) {
   if (
     subject ===
-    EMAIL_UPDATES_COMMAND_ENABLE
+    getEmailUpdatesCommandEnable()
   ) {
     return 'ENABLE';
   }
   if (
     subject ===
-    EMAIL_UPDATES_COMMAND_PAUSE
+    getEmailUpdatesCommandPause()
   ) {
     return 'PAUSE';
   }
   if (
     subject ===
-    EMAIL_UPDATES_COMMAND_DISABLE
+    getEmailUpdatesCommandDisable()
   ) {
     return 'DISABLE';
   }
@@ -227,11 +248,11 @@ function getEmailUpdateHeader(
  *
  * Supports:
  *
- *   As configured in GMAIL_AI_CONFIG.emailUpdates.authorizedSender
+ *   the configured authorized sender
  *
  * and:
  *
- *   First Name Last Name <As configured in GMAIL_AI_CONFIG.emailUpdates.authorizedSender>
+ *   First Name Last Name <the configured authorized sender>
  *************************************************************************/
 function extractEmailUpdateAddress(
   from
@@ -354,7 +375,7 @@ function sendEmailUpdatesStateConfirmation(state) {
   }
 
   GmailApp.sendEmail(
-    EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+    getEmailUpdatesRecipient(),
     subject,
     body
   );
@@ -362,7 +383,7 @@ function sendEmailUpdatesStateConfirmation(state) {
   return {
     success: true,
     recipient:
-      EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+      getEmailUpdatesRecipient(),
     subject: subject,
     state: state
   };
@@ -444,7 +465,7 @@ function processEmailUpdateCommands() {
       'Email commands will not be detected until polling is manually reinstalled.';
 
     GmailApp.sendEmail(
-      EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+      getEmailUpdatesRecipient(),
       subject,
       body
     );
@@ -464,7 +485,7 @@ function processEmailUpdateCommands() {
       confirmation: {
         success: true,
         recipient:
-          EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+          getEmailUpdatesRecipient(),
         subject: subject
       },
       triggerRemoved:
@@ -925,7 +946,7 @@ function sendEmailUpdateSnapshot() {
     ' unread today';
 
   GmailApp.sendEmail(
-    EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+    getEmailUpdatesRecipient(),
     subject,
     snapshot
   );
@@ -933,7 +954,7 @@ function sendEmailUpdateSnapshot() {
   return {
     success: true,
     recipient:
-      EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+      getEmailUpdatesRecipient(),
     subject: subject,
     generated: generated,
     unreadToday:

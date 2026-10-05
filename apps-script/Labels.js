@@ -21,7 +21,11 @@
  *   'SIMPLE'
  ***************************************************************/
 
-const GMAIL_AI_ACCOUNT_TYPE = GMAIL_AI_CONFIG.accountType;
+function getGmailAIAccountType() {
+
+  return getGmailAIConfig().accountType;
+
+}
 
 
 /***************************************************************
@@ -128,12 +132,12 @@ function getAllowedGmailAILabels() {
 
   const labels =
     GMAIL_AI_TAXONOMIES[
-      GMAIL_AI_ACCOUNT_TYPE
+      getGmailAIAccountType()
     ];
 
   if (!labels) {
     throw new Error(
-      `Unknown Gmail AI account type: ${GMAIL_AI_ACCOUNT_TYPE}`
+      `Unknown Gmail AI account type: ${getGmailAIAccountType()}`
     );
   }
 
@@ -195,7 +199,7 @@ function validateGmailAILabels(labels) {
       )
     ) {
       throw new Error(
-        `Label is not allowed for ${GMAIL_AI_ACCOUNT_TYPE}: ${cleanLabel}`
+        `Label is not allowed for ${getGmailAIAccountType()}: ${cleanLabel}`
       );
     }
 
@@ -295,7 +299,7 @@ function setupCanonicalLabels() {
     success: true,
 
     accountType:
-      GMAIL_AI_ACCOUNT_TYPE,
+      getGmailAIAccountType(),
 
     canonical:
       allowedLabels.length,
@@ -337,25 +341,41 @@ function setupCanonicalLabels() {
 
 function testLabelValidation() {
 
+  const accountType =
+    getGmailAIAccountType();
+
+  const allowedLabels =
+    getAllowedGmailAILabels();
+
   console.log(
     'ACCOUNT TYPE: ' +
-    GMAIL_AI_ACCOUNT_TYPE
+    accountType
   );
 
   console.log(
     JSON.stringify(
-      getAllowedGmailAILabels(),
+      allowedLabels,
       null,
       2
     )
   );
 
 
+  /*
+   * Verify that labels from the active taxonomy
+   * are accepted.
+   */
+
+  const testLabels =
+    allowedLabels.slice(
+      0,
+      Math.min(2, allowedLabels.length)
+    );
+
   const valid =
-    validateGmailAILabels([
-      'Newsletters',
-      'Receipts'
-    ]);
+    validateGmailAILabels(
+      testLabels
+    );
 
   console.log(
     'VALID: ' +
@@ -363,13 +383,29 @@ function testLabelValidation() {
   );
 
 
+  /*
+   * Verify that a label outside every canonical
+   * taxonomy is rejected.
+   */
+
   try {
 
     validateGmailAILabels([
-      'LEARN/Newsletters'
+      '__INVALID_TEST_LABEL__'
     ]);
 
+    throw new Error(
+      'Validation failed to reject an invalid label.'
+    );
+
   } catch (error) {
+
+    if (
+      error.message ===
+      'Validation failed to reject an invalid label.'
+    ) {
+      throw error;
+    }
 
     console.log(
       'EXPECTED ERROR: ' +

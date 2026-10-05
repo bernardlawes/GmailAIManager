@@ -166,7 +166,7 @@ function getInboxThreads(options) {
   return {
     success: true,
     apiVersion: '1.0',
-    accountType: GMAIL_AI_ACCOUNT_TYPE,
+    accountType: getGmailAIAccountType(),
     allowedLabels: getAllowedGmailAILabels(),
     query: query,
     requested: maxResults,

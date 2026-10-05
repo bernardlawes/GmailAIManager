@@ -70,7 +70,7 @@ function doGet(e) {
      * request actually succeeded.
      */
     GmailApp.sendEmail(
-      EMAIL_UPDATES_AUTHORIZED_RECIPIENT,
+      getEmailUpdatesRecipient(),
       'Gmail Email Polling - RESTARTED',
       'Email polling has been restarted.\n\n' +
       'State: PAUSED\n' +
