@@ -11,8 +11,8 @@
  *   Pause Email Updates
  *   Disable Email Polling
  *
- * CURRENT PHASE:
- * Command detection/state handling plus read-only unread snapshot preview.
+ * Provides remote command processing, ACTIVE/PAUSED state management,
+ * hourly unread Inbox snapshots, confirmations, and polling control.
  *************************************************************************/
 const EMAIL_UPDATES_AUTHORIZED_SENDER =
   GMAIL_AI_CONFIG.emailUpdates.authorizedSender;

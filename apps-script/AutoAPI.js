@@ -276,7 +276,7 @@ function testGetAutoRules() {
 
 
 /**
- * Temporary controlled add/remove test.
+ * Controlled add/remove test.
  *
  * Uses a fake sender and leaves the AUTO sheet
  * unchanged when complete.
