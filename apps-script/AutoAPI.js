@@ -673,20 +673,6 @@ function applyAutoRuleChanges(changes) {
   }
 
   /*
-   * Immediately process the resulting AUTO
-   * rules against the current Inbox.
-   */
-  /**
-  const execution =
-    runAutoRules();
-
-  return {
-    success: true,
-    changes: results,
-    execution: execution
-  };
-  */
-  /*
   * Synchronize the complete AUTO rule set into
   * native Gmail filters for future messages.
   */
