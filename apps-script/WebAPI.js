@@ -174,6 +174,29 @@ function generateApiKey() {
     'API key created and stored in Script Properties.'
   );
 
+  return key;
+
+}
+
+function generateEmailUpdatesWebSecret() {
+
+  const secret =
+    Utilities.getUuid() +
+    Utilities.getUuid();
+
+  PropertiesService
+    .getScriptProperties()
+    .setProperty(
+      EMAIL_UPDATES_WEB_SECRET_KEY,
+      secret
+    );
+
+  console.log(
+    'Email Updates recovery secret created and stored in Script Properties.'
+  );
+
+  return secret;
+
 }
 
 function testThreadActionRoute() {
