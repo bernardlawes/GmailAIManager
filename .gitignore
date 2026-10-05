@@ -1,0 +1,41 @@
+# ------------------------------------------------------------
+# Gmail AI Manager
+# Local / installation-specific files
+# ------------------------------------------------------------
+
+# Google clasp project binding
+.clasp.json
+**/.clasp.json
+
+# Environment / secret files
+.env
+.env.*
+*.secret
+*.secrets
+secrets/
+credentials/
+
+# Local bridge configuration / credentials
+*.key
+*.token
+
+# Node dependencies
+node_modules/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*~
+.DS_Store
+Thumbs.db
+
+# IDE / editor state
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
