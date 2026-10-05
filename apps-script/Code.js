@@ -496,7 +496,6 @@ function sync() {
   console.log('STEP 2: CLEAN EXISTING MAIL');
   console.log('');
 
-  //trashDeleteRules();
   const trashResult = trashDeleteRules();
 
 
@@ -508,7 +507,6 @@ function sync() {
   console.log('STEP 3: SYNC GMAIL FILTERS');
   console.log('');
 
-  //syncDeleteFilters();
   const filterResult = syncDeleteFilters();
 
 
