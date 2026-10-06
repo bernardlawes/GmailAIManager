@@ -42,10 +42,21 @@ const GMAIL_AI_TAXONOMIES = {
     'ACTION/To Do',
     'ACTION/Waiting',
 
-    // CAREER
-    'CAREER',
-    'CAREER/Job Search',
-    'CAREER/Employer',
+    // COMPANY
+    'COMPANY',
+    'COMPANY/Projects',
+    'COMPANY/Operations',
+    'COMPANY/Income',
+    'COMPANY/Expenses',
+    'COMPANY/Services',
+    'COMPANY/IP',
+
+    // CLIENTS
+    'CLIENTS',
+    'CLIENTS/_Job Search',
+    'CLIENTS/Client A',
+    'CLIENTS/Client B',
+    'CLIENTS/Client C',
 
     // FINANCIAL
     'FINANCIAL',
@@ -60,12 +71,10 @@ const GMAIL_AI_TAXONOMIES = {
     'RECEIPTS/PayApps',
     'RECEIPTS/Food',
     'RECEIPTS/Shopping',
-    'RECEIPTS/Rent',
+    'RECEIPTS/Housing',
     'RECEIPTS/Vehicle',
-    'RECEIPTS/Commute',
     'RECEIPTS/Travel',
     'RECEIPTS/Utilities',
-    'RECEIPTS/Technology',
 
     // RECORDS
     'RECORDS',
@@ -73,28 +82,28 @@ const GMAIL_AI_TAXONOMIES = {
     'RECORDS/Postal',
     'RECORDS/Tax',
     'RECORDS/Legal',
-    'RECORDS/Legal/Claims',
     'RECORDS/Legal/Contracts',
-    'RECORDS/Legal/Disputes',
 
-    // MEDICAL
-    'MEDICAL',
+    // HEALTH
+    'HEALTH',
+    'HEALTH/Records',
+    'HEALTH/Invoices',
 
     // PET
     'PET',
     'PET/Veterinary',
-    'PET/Supplies and Food',
+    'PET/Supplies',
     'PET/Nutrition',
+    'PET/Lali',
 
     // LEARN
     'LEARN',
-    'LEARN/Newsletters',
-    'LEARN/Research',
-
-    // WORK
-    'WORK',
-    'WORK/Clients',
-    'WORK/Projects',
+    'LEARN/Bible',
+    'LEARN/AI',
+    'LEARN/Politics',
+    'LEARN/Vision AI',
+    'LEARN/Trading',
+    'LEARN/Infographics',
 
     // PERSONAL
     'PERSONAL'
