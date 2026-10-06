@@ -224,10 +224,11 @@ function removeAutoRule(sender) {
 
 
 /**
- * Validate sender syntax.
+ * Validate AUTO sender syntax.
  *
- * AUTO v1 deliberately supports exact sender
- * email addresses only, not domains.
+ * Supports:
+ *   exact sender: person@example.com
+ *   domain:       @example.com
  */
 function validateAutoSender(sender) {
 
@@ -236,7 +237,7 @@ function validateAutoSender(sender) {
     !sender.trim()
   ) {
     throw new Error(
-      'AUTO sender must be a non-empty email address.'
+      'AUTO sender must be a non-empty email address or @domain.'
     );
   }
 
@@ -244,11 +245,17 @@ function validateAutoSender(sender) {
     sender.trim();
 
   const emailPattern =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    /^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
-  if (!emailPattern.test(value)) {
+  const domainPattern =
+    /^@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
+  if (
+    !emailPattern.test(value) &&
+    !domainPattern.test(value)
+  ) {
     throw new Error(
-      'AUTO sender must be an exact email address: ' +
+      'AUTO sender must be an exact email address or @domain: ' +
       value
     );
   }
@@ -415,6 +422,82 @@ function runAutoRules() {
     matched: matched,
     labeled: labeled,
     archived: archived
+  };
+}
+
+
+/**
+ * Preview the impact of one AUTO rule without
+ * modifying Gmail, the AUTO sheet, or native filters.
+ *
+ * Returns the number of existing Inbox messages
+ * that currently match the proposed rule.
+ */
+function previewAutoRule(rule) {
+
+  if (
+    !rule ||
+    typeof rule !== 'object' ||
+    Array.isArray(rule)
+  ) {
+    throw new Error(
+      'AUTO preview requires one rule object.'
+    );
+  }
+
+  const sender =
+    validateAutoSender(rule.sender);
+
+  validateGmailAILabels([
+    rule.label
+  ]);
+
+  if (typeof rule.archive !== 'boolean') {
+    throw new Error(
+      'AUTO archive must be true or false.'
+    );
+  }
+
+  /*
+   * Confirm the configured Gmail label
+   * actually exists.
+   */
+  const labelResponse =
+    Gmail.Users.Labels.list('me');
+
+  const labelExists =
+    (labelResponse.labels || [])
+      .some(
+        label =>
+          label.name === rule.label
+      );
+
+  if (!labelExists) {
+    throw new Error(
+      'Gmail label does not exist: ' +
+      rule.label
+    );
+  }
+
+  /*
+   * Inbox only. This deliberately uses the
+   * same query semantics as AUTO execution.
+   */
+  const query =
+    'in:inbox from:(' +
+    sender +
+    ')';
+
+  const messageIds =
+    searchGmailIds(query);
+
+  return {
+    success: true,
+    sender: sender,
+    label: rule.label,
+    archive: rule.archive,
+    existingInboxMatches:
+      messageIds.length
   };
 }
 

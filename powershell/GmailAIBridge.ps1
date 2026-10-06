@@ -276,10 +276,73 @@ try {
             }
 
             # ==================================================
-            # AUTO RULE MANAGEMENT
+            # AUTO RULE PREVIEW
             # ==================================================
 
-            elseif ($inputData.action -eq "applyAutoRuleChanges") {
+            elseif ($inputData.action -eq "previewAutoRule") {
+
+                if ($null -eq $inputData.rule) {
+                    throw "Missing AUTO preview rule."
+                }
+
+                $allowedRuleFields = @(
+                    "sender",
+                    "label",
+                    "archive"
+                )
+
+                foreach (
+                    $property in
+                    $inputData.rule.PSObject.Properties.Name
+                ) {
+                    if ($property -notin $allowedRuleFields) {
+                        throw "Invalid AUTO preview field: $property"
+                    }
+                }
+
+                if (
+                    $null -eq $inputData.rule.sender -or
+                    [string]::IsNullOrWhiteSpace(
+                        [string]$inputData.rule.sender
+                    )
+                ) {
+                    throw "AUTO sender is required."
+                }
+
+                if (
+                    $null -eq $inputData.rule.label -or
+                    [string]::IsNullOrWhiteSpace(
+                        [string]$inputData.rule.label
+                    )
+                ) {
+                    throw "AUTO label is required."
+                }
+
+                if ($null -eq $inputData.rule.archive) {
+                    throw "AUTO archive is required."
+                }
+
+                if ($inputData.rule.archive -isnot [bool]) {
+                    throw "AUTO archive must be true or false."
+                }
+
+                $body = @{
+                    apiKey = $apiKey
+                    action = "previewAutoRule"
+                    rule   = @{
+                        sender  = [string]$inputData.rule.sender
+                        label   = [string]$inputData.rule.label
+                        archive = [bool]$inputData.rule.archive
+                    }
+                } | ConvertTo-Json -Depth 10
+            }
+
+
+                # ==================================================
+                # AUTO RULE MANAGEMENT
+                # ==================================================
+
+                elseif ($inputData.action -eq "applyAutoRuleChanges") {
 
                 if ($null -eq $inputData.changes) {
                     throw "Missing AUTO changes object."

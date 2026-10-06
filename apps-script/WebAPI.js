@@ -83,6 +83,14 @@ function doPost(e) {
 
     }
 
+    if (request.action === 'previewAutoRule') {
+      return jsonResponse(
+        previewAutoRule(
+          request.rule || {}
+        )
+      );
+    }
+
     if (request.action === 'applyAutoRuleChanges') {
       return jsonResponse(
         applyAutoRuleChanges(

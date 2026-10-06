@@ -366,8 +366,15 @@ Future mail from techpresso@dupple.com -> Newsletters + Archive
 
 Before presenting an AUTO rule for approval, explicitly state:
 
+For an exact-sender rule, explicitly state:
+
 "This AUTO rule will apply to all existing Inbox messages from
 <sender> and future messages from that sender."
+
+For a domain rule, explicitly state:
+
+"This AUTO rule will apply to all existing Inbox messages from the
+<domain> domain and future messages from that domain."
 
 Do not create the AUTO rule unless the user explicitly approves the
 persistent behavior.
@@ -391,7 +398,6 @@ Do not archive or label threads during this phase.
 Do not invent thread IDs. Preserve the exact threadId returned by
 getInboxThreads and associate it internally with the numbered
 recommendation shown to the user.
-
 
 ### Approval Boundary
 
@@ -422,13 +428,21 @@ THREAD ACTION:
 Applies only to the specific threadId approved by the user.
 
 AUTO RULE:
-Applies to all Inbox messages matching the exact sender address,
-including existing matching Inbox messages and future matching messages.
+Applies to all Inbox messages matching the exact sender address or
+sender domain, including existing matching Inbox messages and future
+matching messages.
 
-Before creating an AUTO rule, explicitly tell the user:
+Before creating an AUTO rule:
+
+For an exact-sender rule, explicitly state:
 
 "This AUTO rule will apply to all existing Inbox messages from
 <sender> and future messages from that sender."
+
+For a domain rule, explicitly state:
+
+"This AUTO rule will apply to all existing Inbox messages from the
+<domain> domain and future messages from that domain."
 
 Do not create an AUTO rule from approval of a one-time thread action.
 
@@ -436,24 +450,55 @@ For example:
 
 "Archive this" means archive the approved thread only.
 
-"Always archive Techpresso" or explicit approval of a proposed AUTO
-rule may create a persistent AUTO rule.
+"Always archive mail from techpresso@dupple.com" expresses a request
+for persistent AUTO behavior, but it does NOT constitute approval to
+execute the AUTO rule.
+
+Every AUTO rule creation requires two distinct user turns:
+
+1. The user requests or agrees to persistent AUTO behavior.
+2. Codex describes the proposed AUTO rule and its scope, then waits for
+   a subsequent explicit user approval before executing it.
+
+The initial request for an AUTO rule MUST NEVER be treated as the
+approval required to execute that rule, even when the request is phrased
+imperatively using words such as "always", "automatically", or
+"from now on".
+
+After the initial request, Codex must state the proposed sender or
+domain, label, archive behavior, and required scope statement, then stop
+without calling applyAutoRuleChanges.
+
+Only a subsequent user response clearly approving that proposal, such as
+"approve", "yes", "do it", or equivalent, authorizes execution.
 
 If the user's intent between one-time and persistent behavior is
-ambiguous, ask before executing.
+ambiguous, ask before proposing or executing an AUTO rule.
 
 ### Persistent AUTO Rules
 
-AUTO rules provide deterministic handling for known recurring senders.
+AUTO rules provide deterministic handling for known recurring senders
+or sender domains.
 
 An AUTO rule contains:
 
-- sender - exact sender email address
+- sender - exact sender email address or @domain
 - label - one label from allowedLabels
 - archive - true or false
 
+Domain rules are represented internally with a leading @.
+
+Examples:
+
+person@example.com = exact sender
+@example.com = all senders from example.com
+
+When the user refers naturally to a domain, such as "all email from
+example.com", interpret the AUTO sender as @example.com. Do not require
+the user to specify the leading @.
+
 AUTO rules are appropriate when the user wants future mail from a known
-sender handled consistently.
+sender or domain handled consistently.
 
 Examples:
 
@@ -465,14 +510,56 @@ archive them."
 "From now on, label messages from example@example.com as Action but
 leave them in the inbox."
 
+"Always label email from the example.com domain as Newsletters and
+leave it in the inbox."
+
 Do not create an AUTO rule merely because a sender appears recurring.
 Codex may recommend an AUTO rule, but creation requires explicit user
 approval.
 
-Before requesting approval, explicitly state:
+Before requesting approval, Codex MUST preview the proposed AUTO rule
+through the localhost bridge.
 
-"This AUTO rule will apply to all existing Inbox messages from
-<sender> and future messages from that sender."
+Send one read-only POST request:
+
+{
+  "action": "previewAutoRule",
+  "rule": {
+    "sender": "sender@example.com",
+    "label": "Newsletters",
+    "archive": true
+  }
+}
+
+For a domain rule, use the internal @domain representation, for example
+@example.com.
+
+previewAutoRule is read-only. It must not create an AUTO rule, modify
+the AUTO sheet, create or synchronize Gmail filters, add labels, archive
+messages, or otherwise modify Gmail.
+
+Use the returned existingInboxMatches value when requesting approval.
+
+For an exact-sender rule, explicitly state:
+
+"This AUTO rule will affect <existingInboxMatches> existing Inbox
+messages from <sender> and future messages from that sender."
+
+For a domain rule, explicitly state:
+
+"This AUTO rule will affect <existingInboxMatches> existing Inbox
+messages from the <domain> domain and future messages from that domain."
+
+Also state the proposed label and whether matching messages will be
+archived or kept in the Inbox.
+
+After presenting the preview, Codex MUST stop and wait for a subsequent
+explicit user approval.
+
+The preview itself does not authorize execution.
+
+Do not call applyAutoRuleChanges in the same user turn as
+previewAutoRule.
 
 When the user approves an AUTO rule, send one POST request to the
 localhost bridge:
@@ -491,7 +578,10 @@ localhost bridge:
   }
 }
 
-Use the exact sender email address observed in Gmail.
+For an exact-sender rule, use the exact sender email address observed
+in Gmail.
+
+For a domain rule, use @domain, for example @example.com.
 
 The label must be one of the allowedLabels returned by
 getInboxThreads.
@@ -509,8 +599,8 @@ After execution, report:
 - how many were labeled
 - how many were archived
 
-If the user asks to stop automatic handling for a sender, remove the
-AUTO rule using:
+If the user asks to stop automatic handling for a sender or domain,
+remove the AUTO rule using:
 
 {
   "action": "applyAutoRuleChanges",
@@ -522,11 +612,15 @@ AUTO rule using:
   }
 }
 
+For a domain rule removal, use the same @domain representation used
+when the rule was created, for example @example.com.
+
 Removing an AUTO rule stops future automatic handling. It does not undo
 labels or archiving already applied to existing messages.
 
 Do not access the AUTO sheet directly. The Gmail AI Manager backend is
 authoritative for AUTO rules.
+
 
 ### Apply Approved Thread Actions
 
@@ -612,6 +706,22 @@ For inbox observation and approved thread actions:
    running. Do not bypass the bridge.
 7. Do not probe the endpoint with GET, HEAD, OPTIONS, or other
    connectivity requests.
+8. When a POST request to the localhost bridge returns a non-success
+   HTTP status, capture and inspect the response body before reporting
+   the failure to the user.
+
+   Do not report only the HTTP status or generic PowerShell exception
+   message when the bridge returned a response body.
+
+   For PowerShell Invoke-RestMethod failures, read the response stream
+   from the exception when available and surface the bridge's JSON
+   error message.
+
+   Report the actual bridge or backend error to the user without
+   retrying a modifying request automatically.
+
+   A read-only request may be retried only when doing so cannot modify
+   Gmail or persistent Gmail AI Manager state.
 
 ## Safety Rules
 

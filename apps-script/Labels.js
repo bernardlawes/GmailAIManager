@@ -60,8 +60,11 @@ const GMAIL_AI_TAXONOMIES = {
 
     // FINANCIAL
     'FINANCIAL',
+    'FINANCIAL/Advisor',
     'FINANCIAL/Banking',
     'FINANCIAL/Credit Card',
+    'FINANCIAL/Insurance',
+    'FINANCIAL/Monitoring',
     'FINANCIAL/Income',
     'FINANCIAL/Investments',
     'FINANCIAL/Philanthropy',
@@ -83,6 +86,7 @@ const GMAIL_AI_TAXONOMIES = {
     'RECORDS/Tax',
     'RECORDS/Legal',
     'RECORDS/Legal/Contracts',
+    'RECORDS/Legal/Claims',
 
     // HEALTH
     'HEALTH',
@@ -92,6 +96,7 @@ const GMAIL_AI_TAXONOMIES = {
     // PET
     'PET',
     'PET/Veterinary',
+    'PET/Insurance',
     'PET/Supplies',
     'PET/Nutrition',
     'PET/Lali',
@@ -106,7 +111,8 @@ const GMAIL_AI_TAXONOMIES = {
     'LEARN/Infographics',
 
     // PERSONAL
-    'PERSONAL'
+    'PERSONAL',
+    'PERSONAL/Mom',
 
   ],
 
